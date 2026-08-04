@@ -6,15 +6,15 @@ Supabase SQL Editor에서 `supabase-admin-activation.sql`의 `begin;`부터 `com
 
 ## 2. 관리자 로그인 계정 생성
 
-Supabase Dashboard의 `Authentication > Users`에서 관리자 이메일과 비밀번호 사용자를 생성합니다.
+Supabase Dashboard의 `Authentication > Users`에서 `admin@bgfretail.com` 사용자를 생성하고 관리자 비밀번호를 설정합니다. `Auto Confirm User`를 활성화해 주세요.
 
 ## 3. admins 권한표 등록
 
-`supabase-admin-activation.sql` 아래쪽의 주석 처리된 `insert into public.admins` 구문에서 `ADMIN_EMAIL_HERE`를 방금 생성한 실제 이메일로 바꿉니다. 해당 insert 구문의 `--`를 제거하고 SQL Editor에서 실행합니다.
+`supabase-admin-activation.sql` 아래쪽의 주석 처리된 `insert into public.admins` 구문에서 `ADMIN_EMAIL_HERE`를 `admin@bgfretail.com`으로 바꿉니다. 해당 insert 구문의 `--`를 제거하고 SQL Editor에서 실행합니다.
 
 ## 4. 관리자 화면 확인
 
-배포 주소 뒤에 `/admin.html`을 붙여 접속한 뒤 생성한 이메일과 비밀번호로 로그인합니다.
+배포 주소 뒤에 `/admin.html`을 붙여 접속한 뒤 관리자 비밀번호만 입력합니다.
 
 활성화되는 기능:
 
@@ -28,5 +28,3 @@ Supabase Dashboard의 `Authentication > Users`에서 관리자 이메일과 비�
 - 미션 공개일·마감일·활성 상태 저장
 
 브라우저에는 publishable key만 포함되어 있습니다. 관리자 권한은 Supabase 로그인 사용자 UUID와 `admins` 표, RLS 정책으로 검사합니다.
-
-

@@ -29,7 +29,7 @@ commit;
 -- insert into public.admins (auth_user_id, admin_role, active_status)
 -- select id, 'super', true
 -- from auth.users
--- where lower(email) = lower('n.hong@bgf.co.kr')
+-- where lower(email) = lower('ADMIN_EMAIL_HERE')
 -- on conflict (auth_user_id)
 -- do update set admin_role = 'super', active_status = true;
 
