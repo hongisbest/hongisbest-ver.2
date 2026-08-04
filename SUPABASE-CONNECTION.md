@@ -21,5 +21,6 @@
 
 - HTML에 포함된 값은 publishable key뿐이며 service role key는 넣지 않습니다.
 - 사내 공용망에서는 많은 사용자가 같은 공인 IP로 접속할 수 있습니다. Anonymous Sign-In의 IP 기준 제한을 운영 규모에 맞춰 조정하고 Turnstile을 적용하세요.
-- 현재 `admin.html`은 디자인 프로토타입입니다. 관리자 인증·엑셀 업로드·다운로드·설정 저장은 다음 연결 단계에서 구현합니다.
-
+- `admin.html`은 Supabase 관리자 인증과 실제 참여·응답 데이터에 연결되어 있습니다.
+- 기존 프로젝트에서는 `supabase-admin-activation.sql`을 먼저 실행하고, Authentication 사용자 UUID를 `admins`에 등록해야 합니다.
+- 새 프로젝트에서는 `supabase-initial-setup.sql`을 먼저 실행한 뒤 관리자 활성화 SQL을 실행합니다.
