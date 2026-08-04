@@ -29,3 +29,4 @@ Supabase Dashboard의 `Authentication > Users`에서 관리자 이메일과 비�
 
 브라우저에는 publishable key만 포함되어 있습니다. 관리자 권한은 Supabase 로그인 사용자 UUID와 `admins` 표, RLS 정책으로 검사합니다.
 
+
