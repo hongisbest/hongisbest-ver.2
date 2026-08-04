@@ -74,9 +74,19 @@ function activeMission(){const available=missions.filter(m=>isMissionAvailable(m
 function nextDay(){return activeMission()?.day||null}function pct(){return state.done.length*10}
 function availabilityLabel(m){if(!m?.id)return'비공개';const now=Date.now(),open=new Date(m.openAt).getTime(),close=new Date(m.closeAt).getTime();if(!Number.isFinite(open)||!Number.isFinite(close))return'비공개';if(now<open)return'공개 예정';if(now>close)return'참여 마감';return'참여 가능'}
 function renderShell(){if(!state.user)return;const p=state.person||{name:'참여자',dept:'소속 미등록'},today=activeMission();state.current=today?.day||0;$('#homeName').textContent=p.name+' 님,';$$('.avatar').forEach(x=>x.textContent=p.name[0]);$('#profileInitial').textContent=p.name[0];$('#profileName').textContent=p.name;$('#profileDept').textContent=p.dept+' · 참여자';$('#profileId').textContent=state.user;$('#profileDone').textContent=state.done.length+'개';$('#todayDay').textContent=today?'DAY '+String(today.day).padStart(2,'0'):'미션 대기';$('#todayTitle').textContent=today?today.title:'현재 공개된 미션이 없습니다.';$('#startMission').textContent=today?(state.done.includes(today.day)?'오늘의 미션 다시보기':'오늘의 미션 시작하기'):'공개 시간을 확인해 주세요';$('#startMission').disabled=!today;$('#statDone').textContent=state.done.length+'/10';$('#statStreak').textContent=state.done.length+'일';$('#statRate').textContent=pct()+'%';$('#progressLabel').textContent=pct()+'% 완료';$('#progressBar').style.width=pct()+'%';$('#statusRate').textContent=pct()+'%';$('#statusMessage').textContent=state.done.length===10?'10일 챌린지 완주를 축하해요!':(10-state.done.length)+'개의 미션이 남아 있어요.';
- $('#homeDays').innerHTML=missions.map(x=>{const available=isMissionAvailable(x),done=state.done.includes(x.day);return`<button class="day ${done?'done ':''}${available&&x.day===today?.day?'current':'locked'}" data-day="${x.day}" ${available?'':'disabled'}>DAY<br>${String(x.day).padStart(2,'0')}${done?'<span class="check">✓</span>':''}</button>`}).join('');
+$('#homeDays').innerHTML=missions.map(x=>{
+  const available=isMissionAvailable(x);
+  const done=state.done.includes(x.day);
+
+  return `<div class="day ${done?'done ':''}${available&&x.day===today?.day?'current':'locked'}">
+    DAY<br>${String(x.day).padStart(2,'0')}
+    ${done?'<span class="check">✓</span>':''}
+  </div>`;
+}).join('');
  $('#missionList').innerHTML=missions.map(x=>{const available=isMissionAvailable(x),done=state.done.includes(x.day);return`<button class="mission-row ${done?'done ':''}${available&&x.day===today?.day?'current':''}" data-day="${x.day}" ${available?'':'disabled'}><span class="num">${done?'✓':'D'+x.day}</span><div><strong>${x.title}</strong><span>${done&&available?'참여 완료 · 다시보기':availabilityLabel(x)}</span></div><em>›</em></button>`}).join('');
- $$('[data-day]:not([disabled])').forEach(b=>b.onclick=()=>openMission(+b.dataset.day));
+$$('#missionList [data-day]:not([disabled])').forEach(
+  b=>b.onclick=()=>openMission(+b.dataset.day)
+);
 }
 function missionTemplate(m){let inner='';
  const commonHead=`<div class="mission-banner"><img src="assets/campaign-hero.jpg" alt="안전운전 캠페인"><div class="banner-copy"><small>TODAY'S MISSION</small><strong>${m.title}</strong></div></div><p class="mission-intro">${m.desc}</p>`;
