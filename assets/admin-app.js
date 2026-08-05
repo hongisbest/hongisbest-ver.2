@@ -1,6 +1,4 @@
-const SUPABASE_URL='https://ppefajekiqmmxuofaanx.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY='sb_publishable_uoyXZU9bqID_qaxeVKepOg_tUjpy4e0';
-const ADMIN_LOGIN_EMAIL='admin@bgfretail.com';
+const {supabaseUrl:SUPABASE_URL,supabasePublishableKey:SUPABASE_PUBLISHABLE_KEY,adminLoginEmail:ADMIN_LOGIN_EMAIL}=window.SAFE_DRIVING_CONFIG;
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const store={participants:[],missions:[],responses:[],attendance:[],selectedDay:1,admin:null};
