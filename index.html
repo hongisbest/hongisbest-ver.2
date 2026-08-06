@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+
   <title>하루 30초 안전운전 챌린지</title>
   <style>
     :root{--g:#31b947;--g2:#57ca2d;--gd:#168f37;--gs:#eef9f0;--p:#713098;--ps:#f4ecf8;--pink:#ef97b3;--ink:#111418;--muted:#75808d;--line:#e4e9ed;--bg:#edf1f4;--white:#fff;--red:#dd3e48;--amber:#f2a51a;--shadow:0 12px 30px rgba(32,49,60,.08)}
@@ -87,7 +88,7 @@ function missionTemplate(m){let inner='';
  ].map((q,i)=>`<div class="habit-card"><h3>${i+1}. ${q}</h3><div class="habit-choices" data-q="${i}">${['해당 없음','가끔 있음','개선 필요'].map(x=>`<button class="habit-choice" data-value="${x}">${x}</button>`).join('')}</div></div>`).join('')}</div>`;
  if(m.type==='text')inner=`<p class="sentence">운전 중 휴대전화 사용은 <span class="blank">□□</span>!</p><p class="answer-hint">초성 힌트&nbsp; ㄱㅈ</p><label class="label" style="margin-top:16px">정답 입력</label><input class="answer-input" id="answerText" placeholder="두 글자 정답">`;
  if(m.type==='pledge')inner=`<p class="question">나의 안전운전 약속</p><textarea id="pledge" maxlength="20" placeholder="예: 서행, 집중, 배려"></textarea><div class="counter"><span id="pledgeCount">0</span>/20자</div><div class="hint">한 단어 또는 짧은 문장으로 자유롭게 남겨주세요.</div>`;
- if(m.type==='hotspot')inner=`<div class="hotspot-photo"><img src="assets/day04-phone-driver.png" alt="운전 중 휴대전화를 사용하는 운전자"><button class="hotspot-target" data-value="phone" aria-label="빨간색 원으로 표시된 휴대전화 사용 위치"></button></div><div class="hint">빨간색 동그라미를 눌러 위험요인을 찾아보세요.</div>`;
+ if(m.type==='hotspot')inner=`<div class="hotspot-photo"<img src="assets/day04-phone-driver-v2.png" alt="운전 중 휴대전화를 사용하는 운전자"><button class="hotspot-target" data-value="phone" aria-label="빨간색 원으로 표시된 휴대전화 사용 위치"></button></div><div class="hint">빨간색 동그라미를 눌러 위험요인을 찾아보세요.</div>`;
  if(m.type==='text2')inner=`<p class="sentence">앞차와 충분한 <span class="blank">□□□□</span>를 유지해요.</p><label class="label" style="margin-top:14px">빈칸에 들어갈 말</label><input class="answer-input" id="answerText" placeholder="네 글자 정답">`;
  if(m.type==='sequence')inner=`<div class="seq-result" id="seqResult"><span style="color:#9aa3ac;font-size:11px;align-self:center">아래 행동을 순서대로 선택</span></div><div class="sequence">${['확인','출발','정차'].map(x=>`<div class="seq-choice"><span class="seq-num">·</span><button class="seq-btn" data-value="${x}">${x}</button></div>`).join('')}</div><p class="answer-hint">초성 힌트&nbsp; ㅈㅊ → ㅎㅇ → ㅊㅂ</p><button class="admin-link" id="seqReset" type="button">순서 다시 선택</button>`;
  if(m.type==='compare')inner=`<div class="day07-photo"><img src="assets/day07-reference.png" alt="앞차와 가까운 거리와 충분한 안전거리 비교"></div><div class="compare-buttons"><button class="compare-card" data-value="왼쪽"><strong>왼쪽</strong><span>가까운 거리</span></button><button class="compare-card" data-value="오른쪽"><strong>오른쪽</strong><span>충분한 거리</span></button></div>`;
