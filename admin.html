@@ -76,6 +76,40 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;overflow-x:hidden}body{
 .overall-rate .progress{width:92px}
 .overall-rate strong{color:var(--gd);font-size:12px}
 @media(max-width:760px){.hq-metric-note{font-size:8px}.hq-performance-table{min-width:1650px}}
+
+/* Mobile mission analysis: show DAY01–10 as a two-row tap grid. */
+@media(max-width:760px){
+  #missionMenu.mission-menu{
+    display:grid;
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    gap:6px;
+    width:100%;
+    max-width:100%;
+    padding:8px;
+    overflow:visible;
+    touch-action:manipulation;
+  }
+  #missionMenu .mission-item{
+    min-width:0;
+    width:100%;
+    min-height:62px;
+    padding:7px 2px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:4px;
+    text-align:center;
+  }
+  #missionMenu .mission-num{
+    width:32px;
+    height:32px;
+    flex:0 0 32px;
+    margin:0 auto;
+  }
+  #missionMenu .mission-item>div{width:100%;min-width:0}
+  #missionMenu .mission-item strong{display:none}
+  #missionMenu .mission-item span{margin-top:0;font-size:7px;white-space:nowrap}
+}
 </style></head><body>
 <section class="login" id="adminLogin"><div class="login-visual"><img src="assets/campaign-hero.jpg" alt="안전운전 캠페인"><div class="login-shade"></div><div class="login-copy"><span>하루 30초 안전운전 챌린지</span><h1>안전한 습관을<br>데이터로 관리하세요.</h1><p>참여 현황과 미션별 응답을 한눈에 확인하고<br>캠페인 운영을 효율적으로 관리할 수 있습니다.</p></div></div><div class="login-panel"><form class="login-box" id="adminLoginForm"><img class="logo" src="assets/bgf-retail-logo.png" alt="BGF리테일"><span class="admin-chip">ADMIN CONSOLE</span><h2>관리자 로그인</h2><p>관리자 비밀번호를 입력해 주세요.</p><div class="field"><label>관리자 비밀번호</label><input id="adminPassword" type="password" autocomplete="current-password" placeholder="비밀번호" required autofocus></div><p id="adminLoginError" style="min-height:18px;margin:0;color:var(--red);font-size:10px"></p><button class="primary" type="submit">관리자 화면으로 이동</button><div class="security-note">비밀번호는 화면이나 소스코드에 저장되지 않고 Supabase 인증으로 확인됩니다.</div></form></div></section>
 <section class="admin-app hidden" id="adminApp"><aside class="sidebar"><img class="side-logo" src="assets/bgf-retail-logo.png" alt="BGF리테일"><p class="side-label">CAMPAIGN ADMIN</p><nav class="side-nav"><button class="nav active" data-view="dashboard"><b>▦</b><span>전체 현황</span></button><button class="nav" data-view="participants"><b>♙</b><span>참여자 관리</span></button><button class="nav" data-view="analysis"><b>▥</b><span>미션별 분석</span></button><button class="nav" data-view="settings"><b>⚙</b><span>미션 공개 설정</span></button></nav><div class="side-user"><span class="user-avatar">관</span><div><strong>캠페인 관리자</strong><span>Super Admin</span></div><button class="logout" id="adminLogout">↪</button></div></aside><main class="main"><header class="header"><div><h1 id="headerTitle">전체 현황</h1><p>하루 30초 안전운전 챌린지 운영 현황입니다.</p></div><div class="header-actions"><button class="outline" id="participantPreview">참여자 화면</button><button class="outline export">↓ 데이터 다운로드</button></div></header><div class="content">
@@ -86,5 +120,4 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;overflow-x:hidden}body{
 </div></main></section>
 <div class="modal" id="participantModal"><form class="modal-box" id="participantForm"><div class="modal-head"><h2>참여자 등록</h2><button type="button" class="close">×</button></div><div class="form-grid"><div class="field"><label>사번</label><input id="newId" required placeholder="예: 2610105"></div><div class="field"><label>성함</label><input id="newName" required placeholder="성함 입력"></div><div class="field"><label>권역</label><input id="newRegion" required placeholder="예: 수도권"></div><div class="field"><label>지역본부</label><input id="newHq" required placeholder="예: 서울지역본부"></div><div class="field full"><label>부서</label><input id="newDept" required placeholder="부서 입력"></div></div><div class="modal-actions"><button type="button" class="outline close">취소</button><button class="primary" type="submit">등록하기</button></div></form></div><div class="modal" id="deleteParticipantModal"><div class="modal-box"><div class="modal-head"><h2>참여자 삭제 확인</h2></div><p class="modal-copy" id="deleteParticipantText"></p><div class="modal-warning">삭제하면 해당 참여자의 미션 응답, 출석 및 로그인 연결 기록도 함께 삭제되며 되돌릴 수 없습니다.</div><div class="modal-actions"><button type="button" class="outline" id="cancelDeleteParticipant">취소</button><button type="button" class="danger-primary" id="confirmDeleteParticipant">네, 삭제합니다</button></div></div></div><div class="toast" id="adminToast"></div>
 <script src="assets/xlsx.full.min.js"></script><script src="assets/config.js?v=main-20260806-1"></script><script src="assets/supabase.js"></script><script src="assets/admin-app.js?v=main-20260807-1"></script></body></html>
-
 
