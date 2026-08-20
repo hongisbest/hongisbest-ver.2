@@ -2,7 +2,7 @@ const {supabaseUrl:SUPABASE_URL,supabasePublishableKey:SUPABASE_PUBLISHABLE_KEY,
 localStorage.removeItem('safe-driving-admin-auth-v1');
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{storageKey:'safe-driving-admin-auth-v1',persistSession:false,autoRefreshToken:true,detectSessionInUrl:false}});
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
-const store={participants:[],missions:[],responses:[],attendance:[],selectedDay:1,admin:null,pendingDelete:null,participantPage:1,participantPageSize:50,doneByParticipant:new Map(),lastByParticipant:new Map()};
+const store={participants:[],missions:[],responses:[],attendance:[],selectedDay:1,admin:null,pendingDelete:null,participantPage:1,participantPageSize:50,answerPage:1,answerPageSize:30,doneByParticipant:new Map(),lastByParticipant:new Map()};
 
 function toast(message){const el=$('#adminToast');el.textContent=message;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2200)}
 function esc(value){return String(value??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
@@ -39,9 +39,66 @@ function openDeleteConfirm(participant){if(!participant)return;store.pendingDele
 function closeDeleteConfirm(){store.pendingDelete=null;$('#deleteParticipantModal').classList.remove('show')}
 async function deleteParticipant(){const participant=store.pendingDelete;if(!participant)return;const button=$('#confirmDeleteParticipant');button.disabled=true;button.textContent='삭제 중...';const {error}=await db.from('participants').delete().eq('participant_id',participant.participant_id);if(error){button.disabled=false;button.textContent='네, 삭제합니다';toast(error.message||'참여자를 삭제하지 못했습니다.');return}try{await db.from('admin_logs').insert({action_type:'participant_delete',details:{participant_id:participant.participant_id,employee_number:participant.employee_number,employee_name:participant.employee_name}})}catch(error){}closeDeleteConfirm();button.disabled=false;button.textContent='네, 삭제합니다';await loadData();renderAll();toast(`${participant.employee_name} 참여자를 삭제했습니다.`)}
 
-function renderMissionMenu(){const counts=Object.fromEntries(store.missions.map(m=>[m.mission_id,new Set(store.responses.filter(r=>r.mission_id===m.mission_id&&r.completed_status).map(r=>r.participant_id)).size]));$('#missionMenu').innerHTML=store.missions.map(m=>`<button class="mission-item ${m.mission_day===store.selectedDay?'active':''}" data-day="${m.mission_day}"><span class="mission-num">D${m.mission_day}</span><div><strong>${esc(m.mission_title)}</strong><span>${counts[m.mission_id]||0}명 참여</span></div></button>`).join('');$$('.mission-item').forEach(b=>b.onclick=()=>selectMission(+b.dataset.day));selectMission(store.selectedDay)}
+function renderMissionMenu(){
+  const counts=Object.fromEntries(store.missions.map(m=>[
+    m.mission_id,
+    new Set(store.responses.filter(r=>r.mission_id===m.mission_id&&r.completed_status).map(r=>r.participant_id)).size
+  ]));
+  $('#missionMenu').innerHTML=store.missions.map(m=>
+    '<button class="mission-item '+(m.mission_day===store.selectedDay?'active':'')+'" data-day="'+m.mission_day+'"><span class="mission-num">D'+m.mission_day+'</span><div><strong>'+esc(m.mission_title)+'</strong><span>'+(counts[m.mission_id]||0)+'명 참여</span></div></button>'
+  ).join('');
+  $$('.mission-item').forEach(b=>b.onclick=()=>selectMission(+b.dataset.day,true));
+  selectMission(store.selectedDay,false);
+}
 function answerLabel(value){if(value===null||value===undefined)return '-';if(typeof value==='string'||typeof value==='number')return String(value);if(Array.isArray(value))return value.join(' → ');if(typeof value==='object')return Object.values(value).join(' / ');return String(value)}
-function selectMission(day){store.selectedDay=day;$$('.mission-item').forEach(x=>x.classList.toggle('active',+x.dataset.day===day));const mission=store.missions.find(m=>m.mission_day===day);if(!mission)return;const rows=store.responses.filter(r=>r.mission_id===mission.mission_id&&r.completed_status),total=store.participants.length;const judged=rows.filter(r=>r.correct_status!==null),correct=judged.filter(r=>r.correct_status).length;$('#analysisTitle').textContent='DAY '+String(day).padStart(2,'0');$('#analysisDesc').textContent=mission.mission_title;$('#analysisStatus').textContent=mission.active_status?'공개 중':'비공개';$('#analysisStatus').className=mission.active_status?'pill':'pill wait';$('#aPeople').textContent=new Set(rows.map(r=>r.participant_id)).size+'명';$('#aRate').textContent=(total?Math.round(new Set(rows.map(r=>r.participant_id)).size/total*100):0)+'%';$('#aCorrect').textContent=judged.length?Math.round(correct/judged.length*100)+'%':'-';const distribution={};rows.forEach(r=>{const key=answerLabel(r.response_value);distribution[key]=(distribution[key]||0)+1});const max=Math.max(1,...Object.values(distribution));$('#answerBars').innerHTML=Object.entries(distribution).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([label,count])=>`<div class="answer-row"><span title="${esc(label)}">${esc(label)}</span><div class="answer-track"><i style="width:${count/max*100}%"></i></div><strong>${count}</strong></div>`).join('')||'<p style="color:#89949d;font-size:10px">아직 제출된 응답이 없습니다.</p>';const byId=Object.fromEntries(store.participants.map(p=>[p.participant_id,p])),recentRows=rows.slice().sort((a,b)=>new Date(b.completed_at)-new Date(a.completed_at)).slice(0,100);$('#answerRows').innerHTML=recentRows.map(r=>{const p=byId[r.participant_id]||{};return `<tr><td>${esc(p.employee_number||'-')}</td><td>${esc(p.employee_name||'-')}</td><td>${esc(answerLabel(r.response_value))}</td><td>${r.correct_status===null?'-':r.correct_status?'정답':'오답'}</td><td>${fmtDate(r.completed_at)}</td></tr>`}).join('')||'<tr><td colspan="5">아직 제출된 응답이 없습니다.</td></tr>';$('#answerLimitInfo').textContent=rows.length>100?`전체 ${rows.length.toLocaleString()}건 중 최근 100건 표시`:`총 ${rows.length.toLocaleString()}건`}
+function selectMission(day,resetPage=true){
+  if(resetPage||store.selectedDay!==day)store.answerPage=1;
+  store.selectedDay=day;
+  $$('.mission-item').forEach(x=>x.classList.toggle('active',+x.dataset.day===day));
+  const mission=store.missions.find(m=>m.mission_day===day);
+  if(!mission)return;
+
+  const rows=store.responses.filter(r=>r.mission_id===mission.mission_id&&r.completed_status);
+  const total=store.participants.length;
+  const judged=rows.filter(r=>r.correct_status!==null);
+  const correct=judged.filter(r=>r.correct_status).length;
+  $('#analysisTitle').textContent='DAY '+String(day).padStart(2,'0');
+  $('#analysisDesc').textContent=mission.mission_title;
+  $('#analysisStatus').textContent=mission.active_status?'공개 중':'비공개';
+  $('#analysisStatus').className=mission.active_status?'pill':'pill wait';
+  $('#aPeople').textContent=new Set(rows.map(r=>r.participant_id)).size+'명';
+  $('#aRate').textContent=(total?Math.round(new Set(rows.map(r=>r.participant_id)).size/total*100):0)+'%';
+  $('#aCorrect').textContent=judged.length?Math.round(correct/judged.length*100)+'%':'-';
+
+  const distribution={};
+  rows.forEach(r=>{
+    const key=answerLabel(r.response_value);
+    distribution[key]=(distribution[key]||0)+1;
+  });
+  const max=Math.max(1,...Object.values(distribution));
+  $('#answerBars').innerHTML=Object.entries(distribution)
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0,10)
+    .map(([label,count])=>'<div class="answer-row"><span title="'+esc(label)+'">'+esc(label)+'</span><div class="answer-track"><i style="width:'+(count/max*100)+'%"></i></div><strong>'+count+'</strong></div>')
+    .join('')||'<p style="color:#89949d;font-size:10px">아직 제출된 응답이 없습니다.</p>';
+
+  const byId=Object.fromEntries(store.participants.map(p=>[p.participant_id,p]));
+  const sortedRows=rows.slice().sort((a,b)=>new Date(b.completed_at)-new Date(a.completed_at));
+  const pages=Math.max(1,Math.ceil(sortedRows.length/store.answerPageSize));
+  store.answerPage=Math.min(Math.max(1,store.answerPage),pages);
+  const start=(store.answerPage-1)*store.answerPageSize;
+  const pageRows=sortedRows.slice(start,start+store.answerPageSize);
+
+  $('#answerRows').innerHTML=pageRows.map(r=>{
+    const p=byId[r.participant_id]||{};
+    return '<tr><td>'+esc(p.employee_number||'-')+'</td><td>'+esc(p.employee_name||'-')+'</td><td>'+esc(answerLabel(r.response_value))+'</td><td>'+(r.correct_status===null?'-':r.correct_status?'정답':'오답')+'</td><td>'+fmtDate(r.completed_at)+'</td></tr>';
+  }).join('')||'<tr><td colspan="5">아직 제출된 응답이 없습니다.</td></tr>';
+
+  $('#answerLimitInfo').textContent='최신 제출순 · 페이지당 '+store.answerPageSize+'건';
+  $('#answerPageInfo').textContent='총 '+sortedRows.length.toLocaleString()+'건 · '+store.answerPage+' / '+pages+' 페이지';
+  $('#answerPrev').disabled=store.answerPage===1;
+  $('#answerNext').disabled=store.answerPage===pages;
+}
 
 function renderSettings(){const now=Date.now();$('#settingList').innerHTML=store.missions.map(m=>{const live=m.active_status&&new Date(m.open_at).getTime()<=now&&new Date(m.close_at).getTime()>=now;return `<div class="setting-row" data-mission="${m.mission_id}"><span class="daybox">DAY ${String(m.mission_day).padStart(2,'0')}</span><div><h3>${esc(m.mission_title)}</h3><p>${live?'현재 공개 중':'공개 일정 설정'}</p></div><input class="open-at" type="datetime-local" value="${localValue(m.open_at)}"><input class="close-at" type="datetime-local" value="${localValue(m.close_at)}"><button class="switch ${m.active_status?'on':''}" aria-label="미션 활성화"></button></div>`}).join('');$$('.setting-row .switch').forEach(b=>b.onclick=()=>b.classList.toggle('on'))}
 function renderParticipationSummary(){const total=store.participants.length,active=store.participants.filter(p=>doneCount(p.participant_id)>0).length,rate=total?Math.round(active/total*100):0,card=$('.kpis .kpi');if(!$('#kpiParticipationDetail'))card.insertAdjacentHTML('beforeend','<div class="kpi-participation" id="kpiParticipationDetail"><span>현재 참여 중 <b id="kpiActivePeople">0명</b></span><span>참여율 <b id="kpiParticipationRate">0%</b></span></div>');$('#kpiActivePeople').textContent=active.toLocaleString()+'명';$('#kpiParticipationRate').textContent=rate+'%'}
@@ -63,5 +120,7 @@ $('#regionFilter').onchange=()=>{renderFilterOptions();resetParticipantPage()};
 $('#hqFilter').onchange=resetParticipantPage;
 $('#participantPrev').onclick=()=>{store.participantPage--;renderParticipants()};
 $('#participantNext').onclick=()=>{store.participantPage++;renderParticipants()};
+$('#answerPrev').onclick=()=>{store.answerPage--;selectMission(store.selectedDay,false)};
+$('#answerNext').onclick=()=>{store.answerPage++;selectMission(store.selectedDay,false)};
 
 (async function bootstrap(){await db.auth.signOut({scope:'local'});store.admin=null;showLogin()})();
